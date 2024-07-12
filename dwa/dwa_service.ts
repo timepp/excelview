@@ -1,5 +1,6 @@
 import { typeByExtension } from "https://deno.land/std/media_types/mod.ts";
 import { extname } from "https://deno.land/std/path/mod.ts";
+import staticAssets from '../static_assets.json' with { type: "json" }
 
 export function startDenoWebApp(root: string, port: number, apiImpl: {[key: string]: Function}) {
     const corsHeaders = {
@@ -49,6 +50,14 @@ export function startDenoWebApp(root: string, port: number, apiImpl: {[key: stri
             });
         } catch(ex){
             if(ex.code === "ENOENT"){
+                // check from static assets
+                if (path in staticAssets) {
+                    return new Response(staticAssets[path as keyof typeof staticAssets], {
+                        headers: {
+                            "content-type" : typeByExtension(extname(path)) || "text/plain"
+                        }
+                    });
+                }
                 return new Response("Not Found", { status: 404 });
             }
             return new Response("Internal Server Error", { status: 500 });

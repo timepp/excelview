@@ -7,17 +7,12 @@ function WriteTextFile (text, path, encoding) {
     if (encoding) stream.Charset = encoding;
     stream.Open();
     stream.Position = 0;
-
     stream.WriteText(text);
-    try {
-        fso.CreateFolder(tps.file.GetDir(path));
-    } catch (e) { }
     stream.SaveToFile(path, 2);
-
     stream.Close();
 }
 
-function saveActiveRow(excel) {
+function saveActiveRow(excel, path) {
     var sheet = excel.ActiveSheet;
     if (sheet) {
         // get max column that have data
@@ -38,7 +33,7 @@ function saveActiveRow(excel) {
                 var rowValues = rowValues.join('_@@VS@@_');
                 var content = [headings, rowValues].join('_@@RS@@_');
                 WScript.Echo(content);
-                WriteTextFile(content, 'excelrow.txt', 'utf-8');
+                WriteTextFile(content, path, 'utf-8');
         }
     }
 }
@@ -46,17 +41,14 @@ function saveActiveRow(excel) {
 var excel = new ActiveXObject('Excel.Application');
 excel.Visible = true;
 
-if (WScript.Arguments.Length > 0) {
-    var path = WScript.Arguments(0);
-    excel.Workbooks.Open(path);
-}
+var path = WScript.Arguments(0);
 
 // for test, open a workbook
 // excel.Workbooks.Open('d:\\src\\excelview\\test.xlsx');
 
 for (;;) {
     try {
-        saveActiveRow(excel);
+        saveActiveRow(excel, path);
     } catch (e) {
         WScript.Echo(e.message);
     }

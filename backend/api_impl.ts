@@ -1,11 +1,22 @@
 import * as wui from "https://win32.deno.dev/0.4.1/UI.WindowsAndMessaging"
 import { BackendAPI } from '../api.ts'
+import staticAssets from '../static_assets.json' with { type: "json" }
 
 let scriptProcess: Deno.ChildProcess
 
+const infoFile = Deno.env.get('TEMP') + '\\excel_info.txt'
 function launchScript() {
+    // check if excel.js is present
+    let scriptFile = `./excel.js`
+    try {
+        Deno.statSync(scriptFile)
+    } catch (_e) {
+        scriptFile = Deno.env.get('TEMP') + '\\excel.js'
+        const content = staticAssets['./excel.js']
+        Deno.writeTextFileSync(scriptFile, content)
+    }
     const cmd = new Deno.Command('cscript.exe', {
-        args: ['//nologo', 'excel.js'],
+        args: ['//nologo', scriptFile, infoFile],
         stdout: 'inherit',
         stderr: 'inherit',
     })
@@ -60,7 +71,7 @@ export const apiImpl: BackendAPI = {
     },
     getActiveExcelRow: async () => {
         // read output from script
-        const s = Deno.readTextFileSync('excelrow.txt')
+        const s = Deno.readTextFileSync(infoFile)
         const [hs, vs] = s.split('_@@RS@@_')
         return {
             headings: hs.split('_@@HS@@_'),
