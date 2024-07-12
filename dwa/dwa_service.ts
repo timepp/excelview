@@ -20,7 +20,6 @@ export function startDenoWebApp(root: string, port: number, apiImpl: {[key: stri
         if (path == "/api") {
             const cmd = new URL(req.url).searchParams.get("cmd") || ''
             const args = JSON.parse(decodeURI(new URL(req.url).searchParams.get("args") || "[]"))
-            console.log('handling api', cmd, args)
             if (cmd in apiImpl) {
                 const func = apiImpl[cmd as keyof typeof apiImpl]
                 const result = await func.apply(apiImpl, args)

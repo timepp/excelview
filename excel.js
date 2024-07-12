@@ -16,7 +16,7 @@ function saveActiveRow(excel, path) {
     var sheet = excel.ActiveSheet;
     if (sheet) {
         // get max column that have data
-        var maxColumn = sheet.UsedRange.Columns.Count;
+        var maxColumn = Math.min(sheet.UsedRange.Columns.Count, 100);
         // get active range
         var cell = excel.ActiveCell;
         if (cell) {
@@ -29,6 +29,7 @@ function saveActiveRow(excel, path) {
                     var heading = sheet.Cells(1, i).Value;
                     headings.push(heading);
                 }
+                
                 var headingsStr = headings.join('_@@HS@@_');
                 var rowValuesStr = rowValues.join('_@@VS@@_');
                 var content = [headingsStr, rowValuesStr].join('_@@RS@@_');

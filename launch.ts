@@ -1,40 +1,28 @@
-// launch backend and frontend
-// wait for frontend exit, then terminate backend
+import * as vite from 'npm:vite'
 import { apiImpl } from "./backend/api_impl.ts";
 import { startDenoWebApp } from "./dwa/dwa_service.ts";
+import { parseArgs } from "jsr:@std/cli/parse-args";
 
-startDenoWebApp('./frontend', 8080, apiImpl);
-
-//await new Promise(r => setTimeout(r, 1000))
-// launch chrome with Default proflie
-const cmd3 = new Deno.Command(`C:\\Program Files\\Google\\Chrome\\Application\\chrome.exe`, {
-    args: ['--app=http://localhost:8080', '--new-window', '--profile-directory=Default'],
-})
-
-const browser = cmd3.spawn()
-console.log('browser started, pid:', browser.pid)
-
-Deno.addSignalListener("SIGINT", () => {
-    console.log('SIGINT received')
-    Exit()
-})
-
-// stop frontend if backend is closed
-
-function Exit() {
-    const close = (p: Deno.ChildProcess) => {
-        try {
-            p.kill()
-        } catch (e) { 
-            console.log(e.message)
-        }
+async function main() {
+    const args = parseArgs(Deno.args)
+    const apiPort = 22311
+    startDenoWebApp('./frontend', apiPort, apiImpl);
+    
+    let webPort = apiPort
+    // Use Vite for local development
+    if (!args.release && import.meta.url.startsWith('file://')) {
+        const frontend = await vite.createServer()
+        webPort = 5173
+        frontend.listen(webPort)
     }
-    console.log('exiting app')
-    // console.log('closing frontend')
-    // close(frontend)
-    console.log('closing browser')
-    close(browser)
-    Deno.exit()
+    
+    const browser = args.browser || 'C:\\Program Files\\Google\\Chrome\\Application\\chrome.exe'
+    const cmd = new Deno.Command(browser, {
+        args: [`--app=http://localhost:${webPort}/?apiPort=${apiPort}`, '--new-window', '--profile-directory=Default'],
+    })
+    const cp = cmd.spawn()
+    console.log('browser started, pid:', cp.pid)
 }
 
+await main()
 

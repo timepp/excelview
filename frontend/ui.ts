@@ -30,8 +30,12 @@ async function updateUI(app: HTMLElement, force: boolean = false) {
     app.appendChild(table)
     const tbody = document.createElement('tbody')
     table.appendChild(tbody)
+    tbody.style.whiteSpace = 'pre-wrap'
 
     for (let i = 0; i < activeRow.data.length; i++) {
+        if (activeRow.headings[i].trim() === '' && activeRow.data[i].trim() === '') {
+            continue
+        }
         const tr = document.createElement('tr')
         tbody.appendChild(tr)
         const propName = document.createElement('td')

@@ -24,7 +24,8 @@ export type BackendAPI = Omit<typeof api, 'closeBackend'>
 async function callAPI(cmd:string, ...args:any[]){
     const proto = window.location.protocol
     const host = window.location.hostname
-    const port = 8080
+    const params = new URLSearchParams(window.location.search)
+    const port = params.get('apiPort') || '22311'
     const resp = await fetch(`${proto}//${host}:${port}/api?cmd=${cmd}&args=${encodeURIComponent(JSON.stringify(args))}`)
     return await resp.json()
 }
