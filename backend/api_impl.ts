@@ -12,7 +12,7 @@ function launchScript() {
         Deno.statSync(scriptFile)
     } catch (_e) {
         scriptFile = Deno.env.get('TEMP') + '\\excel.js'
-        const content = staticAssets['./excel.js']
+        const content = staticAssets['excel.js']
         Deno.writeTextFileSync(scriptFile, content)
     }
     const cmd = new Deno.Command('cscript.exe', {

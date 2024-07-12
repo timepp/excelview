@@ -4,8 +4,12 @@
 const htmlContent = Deno.readTextFileSync('./frontend/dist/index.html')
 const jsContent = Deno.readTextFileSync('./frontend/dist/assets/index.js')
 
-// replace content within <!--SCRIPT-START--> and <!--SCRIPT-END--> to jsContent
-const newHtmlContent = htmlContent.replace(/<!--SCRIPT-START-->[\s\S]*<!--SCRIPT-END-->/, `<!--SCRIPT-START-->\n<script type="module">\n${jsContent}\n</script>\n<!--SCRIPT-END-->`)
+// replace this line:
+// <script type="module" crossorigin src="/assets/index.js"></script>
+// to jsContent
+const newHtmlContent = htmlContent.replace(
+    /<script type="module" crossorigin src="\/assets\/index.js"><\/script>/, 
+    `<script type="module"> ${jsContent} </script>`)
 
 const wshScriptContent = Deno.readTextFileSync('./excel.js')
 
@@ -16,3 +20,5 @@ const staticAssets = {
 }
 
 Deno.writeTextFileSync('./static_assets.json', JSON.stringify(staticAssets, null, 2))
+
+console.log(newHtmlContent)
