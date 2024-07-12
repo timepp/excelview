@@ -1,10 +1,4 @@
 export const api = {
-    checkResult: async function (_a:number, _b:number, _res:number) {
-        return await callAPI('checkResult', arguments) as string
-    },
-    getWindows: async function () {
-        return await callAPI('getWindows', arguments) as {title:string, className:string}[]
-    },
     launchExcel: async function () {
         return await callAPI('launchExcel', arguments) as string
     },
