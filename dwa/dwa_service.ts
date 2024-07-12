@@ -42,6 +42,13 @@ export function startDenoWebApp(root: string, port: number, apiImpl: {[key: stri
         }
         try {
             console.log('serving', root + path)
+            if (path in staticAssets) {
+                return new Response(staticAssets[path as keyof typeof staticAssets], {
+                    headers: {
+                        "content-type" : typeByExtension(extname(path)) || "text/plain"
+                    }
+                });
+            }
             const file = await Deno.open(root + path);
             return new Response(file.readable, {
                 headers: {
@@ -51,13 +58,6 @@ export function startDenoWebApp(root: string, port: number, apiImpl: {[key: stri
         } catch(ex){
             if(ex.code === "ENOENT"){
                 // check from static assets
-                if (path in staticAssets) {
-                    return new Response(staticAssets[path as keyof typeof staticAssets], {
-                        headers: {
-                            "content-type" : typeByExtension(extname(path)) || "text/plain"
-                        }
-                    });
-                }
                 return new Response("Not Found", { status: 404 });
             }
             return new Response("Internal Server Error", { status: 500 });

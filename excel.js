@@ -29,9 +29,9 @@ function saveActiveRow(excel, path) {
                     var heading = sheet.Cells(1, i).Value;
                     headings.push(heading);
                 }
-                var headings = headings.join('_@@HS@@_');
-                var rowValues = rowValues.join('_@@VS@@_');
-                var content = [headings, rowValues].join('_@@RS@@_');
+                var headingsStr = headings.join('_@@HS@@_');
+                var rowValuesStr = rowValues.join('_@@VS@@_');
+                var content = [headingsStr, rowValuesStr].join('_@@RS@@_');
                 WScript.Echo(content);
                 WriteTextFile(content, path, 'utf-8');
         }
