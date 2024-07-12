@@ -1,7 +1,7 @@
-import * as vite from 'npm:vite'
+import * as vite from 'npm:vite@5.3.3'
+import { parseArgs } from "jsr:@std/cli@0.224.7/parse-args";
 import { apiImpl } from "./backend/api_impl.ts";
 import { startDenoWebApp } from "./dwa/dwa_service.ts";
-import { parseArgs } from "jsr:@std/cli/parse-args";
 
 async function main() {
     const args = parseArgs(Deno.args)

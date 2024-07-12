@@ -1,5 +1,5 @@
-import { typeByExtension } from "https://deno.land/std/media_types/mod.ts";
-import { extname } from "https://deno.land/std/path/mod.ts";
+import {typeByExtension} from 'jsr:@std/media-types@1.0.1'
+import { extname } from 'jsr:@std/path@1.0.0'
 import staticAssets from '../static_assets.json' with { type: "json" }
 
 export function startDenoWebApp(root: string, port: number, apiImpl: {[key: string]: Function}) {
