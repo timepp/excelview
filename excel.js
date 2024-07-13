@@ -33,7 +33,7 @@ function saveActiveRow(excel, path) {
                 var headingsStr = headings.join('_@@HS@@_');
                 var rowValuesStr = rowValues.join('_@@VS@@_');
                 var content = [headingsStr, rowValuesStr].join('_@@RS@@_');
-                WScript.Echo(content);
+                // WScript.Echo(content);
                 WriteTextFile(content, path, 'utf-8');
         }
     }
@@ -44,15 +44,18 @@ excel.Visible = true;
 
 var path = WScript.Arguments(0);
 
-// for test, open a workbook
-// excel.Workbooks.Open('d:\\src\\excelview\\test.xlsx');
-
 for (;;) {
+    var cmd = WScript.StdIn.ReadLine();
+    if (cmd == "exit") {
+        WScript.Echo("received exit");
+        break;
+    }
+
     try {
         saveActiveRow(excel, path);
     } catch (e) {
         WScript.Echo(e.message);
     }
-
-    WScript.Sleep(1000);
 }
+
+excel.Quit();

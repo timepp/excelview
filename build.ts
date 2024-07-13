@@ -1,6 +1,10 @@
 // wrap some static assest to a single json file
 // so that they are be imported to main app and can be created on demand on a http import use case
 
+import * as vite from 'npm:vite@5.3.3'
+
+await vite.build()
+
 const htmlContent = Deno.readTextFileSync('./frontend/dist/index.html')
 const jsContent = Deno.readTextFileSync('./frontend/dist/assets/index.js')
 
@@ -15,7 +19,6 @@ const wshScriptContent = Deno.readTextFileSync('./excel.js')
 
 const staticAssets = {
     '/index.html': newHtmlContent,
-    '/index2.html': newHtmlContent,
     'excel.js': wshScriptContent,
 }
 

@@ -15,8 +15,27 @@ function updateStyle(app: HTMLElement, styleText: string) {
     })
 }
 
+async function exit() {
+    try {
+        await api.closeBackend()
+    } catch (_e) {
+        // ignore
+    }
+    window.close()
+}
+
+async function getActiveExcelRow() {
+    try {
+        return await api.getActiveExcelRow()
+    } catch (e) {
+        console.error('backend exit', e)
+        window.close()
+        throw 'unreachable'
+    }
+}
+
 async function updateUI(app: HTMLElement, force: boolean = false) {
-    const activeRow = await api.getActiveExcelRow()
+    const activeRow = await getActiveExcelRow()
     if (!force && currentRowData && JSON.stringify(currentRowData) === JSON.stringify(activeRow)) {
         return
     }
@@ -111,8 +130,7 @@ async function main() {
     close.classList.add('btn', 'btn-danger')
     close.textContent = 'Close';
     close.onclick = async () => {
-        await api.closeBackend()
-        window.close()
+        await exit()
     }
     app.append(close)
 

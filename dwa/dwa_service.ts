@@ -3,6 +3,7 @@ import { extname } from 'jsr:@std/path@1.0.0'
 import staticAssets from '../static_assets.json' with { type: "json" }
 
 export function startDenoWebApp(root: string, port: number, apiImpl: {[key: string]: Function}) {
+    const ac = new AbortController();
     const corsHeaders = {
         "Access-Control-Allow-Origin": "*",
         "Access-Control-Allow-Methods": "GET, POST, PUT, DELETE, OPTIONS",
@@ -28,7 +29,7 @@ export function startDenoWebApp(root: string, port: number, apiImpl: {[key: stri
                 if (cmd === 'closeBackend') {
                     setTimeout(() => {
                         console.log('backend closed')
-                        Deno.exit()
+                        ac.abort()
                     }, 1000)
                     return new Response(JSON.stringify('OK'), { status: 200 });
                 }
@@ -63,6 +64,6 @@ export function startDenoWebApp(root: string, port: number, apiImpl: {[key: stri
         }
     };
     
-    Deno.serve({ port }, handlerCORS);
+    return Deno.serve({ port, signal: ac.signal }, handlerCORS);
 }
 

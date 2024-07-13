@@ -1,17 +1,18 @@
 import * as vite from 'npm:vite@5.3.3'
 import { parseArgs } from "jsr:@std/cli@0.224.7/parse-args";
-import { apiImpl } from "./backend/api_impl.ts";
+import * as apiImpl from "./backend/api_impl.ts";
 import { startDenoWebApp } from "./dwa/dwa_service.ts";
 
 async function main() {
     const args = parseArgs(Deno.args)
     const apiPort = 22311
-    startDenoWebApp('./frontend', apiPort, apiImpl);
+    const backend = startDenoWebApp('./frontend', apiPort, apiImpl.apiImpl);
     
     let webPort = apiPort
+    let frontend: vite.ViteDevServer | null = null
     // Use Vite for local development
     if (!args.release && import.meta.url.startsWith('file://')) {
-        const frontend = await vite.createServer()
+        frontend = await vite.createServer()
         webPort = 5173
         frontend.listen(webPort)
     }
@@ -22,6 +23,23 @@ async function main() {
     })
     const cp = cmd.spawn()
     console.log('browser started, pid:', cp.pid)
+
+    const cleanUp = async () => {
+        console.log('cleaning up...')
+        if (frontend) {
+            await frontend.close()
+        }
+        await apiImpl.cleanUp()
+    }
+
+    Deno.addSignalListener('SIGINT', () => {
+        console.log('SIGINT received, shutting down backend')
+        backend.shutdown()
+    })
+
+    await backend.finished
+    await cleanUp()
+    console.log('App Exit')
 }
 
 await main()
