@@ -17,11 +17,29 @@ async function main() {
         frontend.listen(webPort)
     }
     
-    const browser = args.browser || 'C:\\Program Files\\Google\\Chrome\\Application\\chrome.exe'
-    const cmd = new Deno.Command(browser, {
-        args: [`--app=http://localhost:${webPort}/?apiPort=${apiPort}`, '--new-window', '--profile-directory=Default'],
-    })
-    const cp = cmd.spawn()
+    const browsers = args.browser? [args.browser] : 
+        ['C:\\Program Files\\Google\\Chrome\\Application\\chrome.exe',
+        'C:\\Program Files (x86)\\Microsoft\\Edge\\Application\\msedge.exe',
+        'C:\\Program Files\\Microsoft\\Edge\\Application\\msedge.exe']
+    let cp: Deno.ChildProcess | null = null
+    for (const browser of browsers) {
+        console.log('trying to start browser:', browser)
+        try {
+            const cmd = new Deno.Command(browser, {
+                args: [`--app=http://localhost:${webPort}/?apiPort=${apiPort}`, '--new-window', '--profile-directory=Default'],
+            })
+            cp = cmd.spawn()
+            break
+        } catch (e) {
+            console.warn('error starting browser:', e)
+        }
+    }
+
+    if (!cp) {
+        console.error('could not start browser')
+        Deno.exit(1)
+    }
+
     console.log('browser started, pid:', cp.pid)
 
     const cleanUp = async () => {
