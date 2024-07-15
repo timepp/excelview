@@ -74,6 +74,7 @@ async function updateUI(app: HTMLElement, force: boolean = false) {
         if (v.startsWith('http')) {
             const a = document.createElement('a')
             a.href = v
+            a.target = '_blank'
             a.textContent = v
             td.appendChild(a)
         } else {
