@@ -54,10 +54,17 @@ export async function getActiveExcelRow() {
     // wait the file to be created
     await new Promise(resolve => setTimeout(resolve, 500))
     // read output from script
-    const s = Deno.readTextFileSync(infoFile)
-    const [hs, vs] = s.split('_@@RS@@_')
-    return {
-        headings: hs.split('_@@HS@@_'),
-        data: vs.split('_@@VS@@_')
+    try {
+        const s = Deno.readTextFileSync(infoFile)
+        const [hs, vs] = s.split('_@@RS@@_')
+        return {
+            headings: hs.split('_@@HS@@_'),
+            data: vs.split('_@@VS@@_')
+        }
+    } catch (_e) {
+        return {
+            headings: [],
+            data: []
+        }
     }
 }
