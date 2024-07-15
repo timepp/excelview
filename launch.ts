@@ -50,9 +50,16 @@ async function main() {
         await apiImpl.cleanUp()
     }
 
+    let sigIntCount = 0
     Deno.addSignalListener('SIGINT', () => {
-        console.log('SIGINT received, shutting down backend')
-        backend.shutdown()
+        sigIntCount++
+        if (sigIntCount > 1) {
+            console.log('SIGINT received again, force exit')
+            Deno.exit(1)
+        } else {
+            console.log('SIGINT received, shutting down backend')
+            backend.shutdown()
+        }
     })
 
     await backend.finished
