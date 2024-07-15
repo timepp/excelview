@@ -12,7 +12,7 @@ Prerequisite:
 Simply:
 
 ```bash
-deno run -A deno run -A jsr:@timepp/ev
+deno run -A jsr:@timepp/ev
 ```
 
 Then:
@@ -21,4 +21,12 @@ Then:
 1. In the opened Excel window, open the file you want to view
 1. Click on any cell in excel, you will see the entire row data in the app window
 
+Below is the screenshot with fake data:
 ![alt text](screenshot.png)
+
+## Development
+
+### TODO
+
+- favicon
+- use websocket to communicate between frontend/backend, so that we can get rid of the polling and have better detection on UI exits
