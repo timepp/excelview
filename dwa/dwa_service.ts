@@ -1,15 +1,52 @@
 import {typeByExtension} from 'jsr:@std/media-types@1.0.1'
 import { extname } from 'jsr:@std/path@1.0.0'
 import staticAssets from '../static_assets.json' with { type: "json" }
+import * as base64 from 'jsr:@std/encoding/base64';
 
-export function startDenoWebApp(root: string, port: number, apiImpl: {[key: string]: Function}) {
-    const ac = new AbortController();
-    const corsHeaders = {
-        "Access-Control-Allow-Origin": "*",
-        "Access-Control-Allow-Methods": "GET, POST, PUT, DELETE, OPTIONS",
-        "Access-Control-Allow-Headers": "Content-Type, Content-Length, X-Requested-With",
-    };
+const clients: WebSocket[] = []
+let server: Deno.HttpServer | null = null
+export function startDenoWebAppService(root: string, port: number, apiImpl: {[key: string]: Function}) {
     const handlerCORS = async (req: Request) => {
+        // handle websocket connection
+        if (req.headers.get("upgrade") === "websocket") {
+            const { socket, response } = Deno.upgradeWebSocket(req);
+            socket.onopen = () => {
+                console.log("socket opened");
+                clients.push(socket)
+            }
+            socket.onmessage = async (e) => {
+                const {cmd, args} = JSON.parse(e.data)
+                try {
+                    if (cmd in apiImpl) {
+                        const func = apiImpl[cmd as keyof typeof apiImpl]
+                        const result = await func.apply(apiImpl, args)
+                        socket.send(JSON.stringify(result))
+                    } else {
+                        socket.send(`'invalid command ${cmd}'`)
+                    }
+                } catch (_e) {
+                    // ignore
+                }
+            }
+            socket.onclose = () => {
+                console.log("socket closed");
+                const i = clients.indexOf(socket)
+                if (i >= 0) {
+                    clients.splice(i, 1)
+                }
+                setTimeout(() => {
+                    if (clients.length === 0) {
+                        console.log('no more clients, shutting down server')
+                        server?.shutdown()
+                    }
+                }, 2000)
+            }
+            socket.onerror = (e) => {
+                console.log("socket error", e);
+            }
+            return response;
+        }
+
         const response = await handler(req);
         response.headers.set("Access-Control-Allow-Origin", "*");
         return response;
@@ -17,33 +54,15 @@ export function startDenoWebApp(root: string, port: number, apiImpl: {[key: stri
     const handler = async (req: Request) => {
         let path = new URL(req.url).pathname;
     
-        // API
-        if (path == "/api") {
-            const cmd = new URL(req.url).searchParams.get("cmd") || ''
-            const args = JSON.parse(decodeURI(new URL(req.url).searchParams.get("args") || "[]"))
-            if (cmd in apiImpl) {
-                const func = apiImpl[cmd as keyof typeof apiImpl]
-                const result = await func.apply(apiImpl, args)
-                return new Response(JSON.stringify(result), { status: 200 });
-            } else {
-                if (cmd === 'closeBackend') {
-                    setTimeout(() => {
-                        console.log('backend closed')
-                        ac.abort()
-                    }, 1000)
-                    return new Response(JSON.stringify('OK'), { status: 200 });
-                }
-            }
-            return new Response(`invalid command ${cmd}`, { status: 404 });
-        }
-    
         if(path == "/"){
             path = `/index.html`;
         }
         try {
             console.log('serving', root + path)
             if (path in staticAssets) {
-                return new Response(staticAssets[path as keyof typeof staticAssets], {
+                console.log('serving from static assets', path)
+                const content = base64.decodeBase64(staticAssets[path as keyof typeof staticAssets])
+                return new Response(content, {
                     headers: {
                         "content-type" : typeByExtension(extname(path)) || "text/plain"
                     }
@@ -64,6 +83,10 @@ export function startDenoWebApp(root: string, port: number, apiImpl: {[key: stri
         }
     };
     
-    return Deno.serve({ port, signal: ac.signal }, handlerCORS);
+    server = Deno.serve({ port }, handlerCORS);
+    return server
 }
 
+export function stopDenoWebAppService() {
+    server?.shutdown()
+}

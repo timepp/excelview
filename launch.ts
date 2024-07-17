@@ -1,12 +1,12 @@
 import * as vite from 'npm:vite@5.3.3'
 import { parseArgs } from "jsr:@std/cli@0.224.7/parse-args";
 import * as apiImpl from "./backend/api_impl.ts";
-import { startDenoWebApp } from "./dwa/dwa_service.ts";
+import * as service from "./dwa/dwa_service.ts";
 
 async function main() {
     const args = parseArgs(Deno.args)
-    const apiPort = 22311
-    const backend = startDenoWebApp('./frontend', apiPort, apiImpl.apiImpl);
+    const apiPort = 22312
+    const backend = service.startDenoWebAppService('./frontend', apiPort, apiImpl.apiImpl);
     
     let webPort = apiPort
     let frontend: vite.ViteDevServer | null = null
@@ -58,7 +58,7 @@ async function main() {
             Deno.exit(1)
         } else {
             console.log('SIGINT received, shutting down backend')
-            backend.shutdown()
+            service.stopDenoWebAppService()
         }
     })
 

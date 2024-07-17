@@ -1,9 +1,19 @@
-import {api} from '../api.js'
+import {api} from '../api.ts'
 
 let tbl: HTMLTableElement | null = null
 let currentRowData: { headings: string[], data: string[] } | null = null
 let styles: Record<string, string> = {}
 let showHeading = true
+
+function updateCss(cssText: string) {
+    let style = document.getElementById('custom-style')
+    if (!style) {
+        style = document.createElement('style')
+        style.id = 'custom-style'
+        document.head.appendChild(style)
+    }
+    style.textContent = cssText
+}
 
 function updateStyle(app: HTMLElement, styleText: string) {
     styles = {}
@@ -13,15 +23,6 @@ function updateStyle(app: HTMLElement, styleText: string) {
             styles[parts[0].trim()] = parts.slice(1).join(':').trim()
         }
     })
-}
-
-async function exit() {
-    try {
-        await api.closeBackend()
-    } catch (_e) {
-        // ignore
-    }
-    window.close()
 }
 
 async function getActiveExcelRow() {
@@ -61,9 +62,6 @@ async function updateUI(app: HTMLElement, force: boolean = false) {
         propName.style.fontWeight = 'bold'
         tr.appendChild(propName)
         propName.textContent = activeRow.headings[i] || ''
-        if (!showHeading) {
-            propName.style.display = 'none'
-        }
         const td = document.createElement('td')
         tr.appendChild(td)
         // set style according to `styles` object
@@ -124,16 +122,8 @@ async function main() {
     app.append(toggleHeading)
     toggleHeading.onclick = () => {
         showHeading = !showHeading
-        updateUI(app, true)
+        updateCss(showHeading ? '' : 'td:first-child {display: none}')
     }
-
-    const close = document.createElement('button');
-    close.classList.add('btn', 'btn-danger')
-    close.textContent = 'Close';
-    close.onclick = async () => {
-        await exit()
-    }
-    app.append(close)
 
 
     // create a multi-line text area for style
@@ -162,6 +152,7 @@ async function main() {
     // }
     app.appendChild(document.createElement('p'))
 
+    updateUI(app)
     setInterval(updateUI, 1000, app)
 }
 
