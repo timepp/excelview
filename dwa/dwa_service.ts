@@ -1,7 +1,7 @@
 import {typeByExtension} from 'jsr:@std/media-types@1.0.1'
 import { extname } from 'jsr:@std/path@1.0.0'
 import staticAssets from '../static_assets.json' with { type: "json" }
-import * as base64 from 'jsr:@std/encoding/base64';
+import * as enc from 'jsr:@std/encoding@1.0.1'
 
 const clients: WebSocket[] = []
 let server: Deno.HttpServer | null = null
@@ -61,7 +61,7 @@ export function startDenoWebAppService(root: string, port: number, apiImpl: {[ke
             console.log('serving', root + path)
             if (path in staticAssets) {
                 console.log('serving from static assets', path)
-                const content = base64.decodeBase64(staticAssets[path as keyof typeof staticAssets])
+                const content = enc.decodeBase64(staticAssets[path as keyof typeof staticAssets])
                 return new Response(content, {
                     headers: {
                         "content-type" : typeByExtension(extname(path)) || "text/plain"
