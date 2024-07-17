@@ -15,6 +15,12 @@ Simply:
 deno run -A jsr:@timepp/ev
 ```
 
+Or use this one-liner to install deno and launch the app at the same time:
+
+```cmd
+powershell "irm https://timepp.github.io/ev.ps1|iex"
+```
+
 Then:
 
 1. In the opened app window, click "Launch Excel to open file"
