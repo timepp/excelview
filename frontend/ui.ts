@@ -89,9 +89,11 @@ async function main() {
 
     const usage = document.createElement('div');
     usage.classList.add('alert', 'alert-info', 'alert-dismissible', 'fade', 'show')
-    usage.innerText = 
-        'This app keep sync with Excel and show the data in current(active) row so that you can see all columns without scrolling if there are too many columns.\n' +
-        'It assume there is a heading row in Excel and use the heading as the first column in the table. '
+    usage.innerHTML = `
+        This app keep sync with Excel and show the data in current(active) row so that you can see all columns without scrolling if there are too many columns.<br>
+        It assume there is a heading row in Excel and use the heading as the first column in the table. <br>
+        <b>Usage:</b> Click "Launch Excel to open file", Excel window will open (window might be flashing on taskbar instead of showing up, just click on the flashing icon to bring it up). Then open your file. Locate to any cell, you will see full row data below. 
+        `.trim()
     usage.style.marginTop = '10px'
 
     const launch = document.createElement('button');

@@ -47,7 +47,7 @@ var path = WScript.Arguments(0);
 for (;;) {
     var cmd = WScript.StdIn.ReadLine();
     if (cmd == "exit") {
-        WScript.Echo("received exit");
+        WScript.Echo("excel sync: received exit");
         break;
     }
 
