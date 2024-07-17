@@ -87,15 +87,15 @@ async function main() {
     const app = document.createElement('div');
     document.body.appendChild(app);
 
-    const help = document.createElement('div');
-    help.classList.add('alert', 'alert-info')
-    help.innerText = 
+    const usage = document.createElement('div');
+    usage.classList.add('alert', 'alert-info', 'alert-dismissible', 'fade', 'show')
+    usage.innerText = 
         'This app keep sync with Excel and show the data in current(active) row so that you can see all columns without scrolling if there are too many columns.\n' +
         'It assume there is a heading row in Excel and use the heading as the first column in the table. '
-    app.appendChild(help)
+    usage.style.marginTop = '10px'
 
     const launch = document.createElement('button');
-    launch.classList.add('btn', 'btn-primary')
+    launch.classList.add('btn', 'btn-danger')
     launch.style.marginRight = '10px'
     launch.textContent = 'Launch Excel to open file';
     launch.onclick = async () => {
@@ -125,6 +125,21 @@ async function main() {
         updateCss(showHeading ? '' : 'td:first-child {display: none}')
     }
 
+    const toggleHelp = document.createElement('button')
+    toggleHelp.classList.add('btn', 'btn-info')
+    toggleHelp.textContent = 'Hide Usage';
+    app.append(toggleHelp)
+    toggleHelp.onclick = () => {
+        if (usage.style.display === 'none') {
+            usage.style.display = 'block'
+            toggleHelp.textContent = 'Hide Usage'
+        } else {
+            usage.style.display = 'none'
+            toggleHelp.textContent = 'Show Usage'
+        }
+    }
+
+    app.appendChild(usage)
 
     // create a multi-line text area for style
     const styleText = document.createElement('textarea')
