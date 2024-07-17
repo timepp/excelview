@@ -5,6 +5,7 @@ import * as enc from 'jsr:@std/encoding@1.0.1'
 
 const clients: WebSocket[] = []
 let server: Deno.HttpServer | null = null
+const ac = new AbortController()
 export function startDenoWebAppService(root: string, port: number, apiImpl: {[key: string]: Function}) {
     const handlerCORS = async (req: Request) => {
         // handle websocket connection
@@ -37,7 +38,7 @@ export function startDenoWebAppService(root: string, port: number, apiImpl: {[ke
                 setTimeout(() => {
                     if (clients.length === 0) {
                         console.log('no more clients, shutting down server')
-                        server?.shutdown()
+                        ac.abort()
                     }
                 }, 2000)
             }
@@ -83,10 +84,10 @@ export function startDenoWebAppService(root: string, port: number, apiImpl: {[ke
         }
     };
     
-    server = Deno.serve({ port }, handlerCORS);
+    server = Deno.serve({ port, signal:ac.signal }, handlerCORS);
     return server
 }
 
 export function stopDenoWebAppService() {
-    server?.shutdown()
+    ac.abort()
 }
