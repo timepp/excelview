@@ -2,26 +2,19 @@
 // so that they are be imported to main app and can be created on demand on a http import use case
 
 import * as vite from 'npm:vite@5.3.3'
+import * as base64 from 'jsr:@std/encoding/base64'
 
 await vite.build()
 
-const htmlContent = Deno.readTextFileSync('./frontend/dist/index.html')
-const jsContent = Deno.readTextFileSync('./frontend/dist/assets/index.js')
-
-// replace this line:
-// <script type="module" crossorigin src="/assets/index.js"></script>
-// to jsContent
-const newHtmlContent = htmlContent.replace(
-    /<script type="module" crossorigin src="\/assets\/index.js"><\/script>/, 
-    `<script type="module"> ${jsContent} </script>`)
-
-const wshScriptContent = Deno.readTextFileSync('./excel.js')
-
 const staticAssets = {
-    '/index.html': newHtmlContent,
-    'excel.js': wshScriptContent,
+    '/index.html': './frontend/dist/index.html',
+    '/assets/index.js': './frontend/dist/assets/index.js',
+    '/assets/logo.jpg': './frontend/dist/assets/logo.jpg',
+    'excel.js': './excel.js'
+}
+
+for (const [path, filePath] of Object.entries(staticAssets)) {
+    staticAssets[path as keyof typeof staticAssets] = base64.encodeBase64(Deno.readFileSync(filePath))
 }
 
 Deno.writeTextFileSync('./static_assets.json', JSON.stringify(staticAssets, null, 2))
-
-console.log(newHtmlContent)
