@@ -29,10 +29,14 @@ function saveActiveRow(excel, path) {
                     var heading = sheet.Cells(1, i).Value;
                     headings.push(heading);
                 }
-                
+                // get excel file name
+                var fileName = excel.ActiveWorkbook.FullName;
+                // get sheet name
+                var sheetName = sheet.Name;
+                // get active row number
                 var headingsStr = headings.join('_@@HS@@_');
                 var rowValuesStr = rowValues.join('_@@VS@@_');
-                var content = [headingsStr, rowValuesStr].join('_@@RS@@_');
+                var content = [fileName, sheetName, activeRow, headingsStr, rowValuesStr].join('_@@RS@@_');
                 // WScript.Echo(content);
                 WriteTextFile(content, path, 'utf-8');
         }
@@ -42,7 +46,7 @@ function saveActiveRow(excel, path) {
 var excel = new ActiveXObject('Excel.Application');
 excel.Visible = true;
 
-var path = WScript.Arguments(0);
+var infoFile = WScript.Arguments(0);
 
 for (;;) {
     var cmd = WScript.StdIn.ReadLine();
@@ -52,7 +56,7 @@ for (;;) {
     }
 
     try {
-        saveActiveRow(excel, path);
+        saveActiveRow(excel, infoFile);
     } catch (e) {
         WScript.Echo(e.message);
     }

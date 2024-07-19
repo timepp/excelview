@@ -1,28 +1,28 @@
 import {api} from '../api.ts'
 
 let tbl: HTMLTableElement | null = null
-let currentRowData: { headings: string[], data: string[] } | null = null
-let styles: Record<string, string> = {}
+let currentRowData: Awaited<ReturnType<typeof getActiveExcelRow>> | null = null
 let showHeading = true
 
-function updateCss(cssText: string) {
-    let style = document.getElementById('custom-style')
+function updateCss(styleId: string, cssText: string) {
+    let style = document.getElementById(styleId)
     if (!style) {
         style = document.createElement('style')
-        style.id = 'custom-style'
+        style.id = styleId
         document.head.appendChild(style)
     }
     style.textContent = cssText
 }
 
-function updateStyle(app: HTMLElement, styleText: string) {
-    styles = {}
-    styleText.split('\n').forEach(line => {
+function updateStyle(styleText: string) {
+    let cssText = styleText.split('\n').map(line => {
         const parts = line.split(':')
         if (parts.length >= 2) {
-            styles[parts[0].trim()] = parts.slice(1).join(':').trim()
+            return `#${parts[0].trim()} {${parts.slice(1).join(':').trim()}}`
         }
-    })
+        return ''
+    }).join('\n')
+    updateCss('tableStyle', cssText)
 }
 
 async function getActiveExcelRow() {
@@ -41,6 +41,14 @@ async function updateUI(app: HTMLElement, force: boolean = false) {
         return
     }
     currentRowData = activeRow
+
+    const summary = document.getElementById('summary')!
+    if (activeRow.fileName === '') {
+        summary.innerHTML = getUsage()
+    } else {
+        summary.innerHTML = `${activeRow.fileName} - ${activeRow.sheetName} - ${activeRow.row}`
+    }
+
     if (tbl) {
         tbl.remove()
     }
@@ -63,10 +71,9 @@ async function updateUI(app: HTMLElement, force: boolean = false) {
         tr.appendChild(propName)
         propName.textContent = activeRow.headings[i] || ''
         const td = document.createElement('td')
+        td.id = activeRow.headings[i]
+        td.style.wordBreak = 'break-word'
         tr.appendChild(td)
-        // set style according to `styles` object
-        const styleText = styles[activeRow.headings[i]]
-        td.style.cssText = styleText || ''
 
         const v = activeRow.data[i]
         if (v.startsWith('http')) {
@@ -83,21 +90,32 @@ async function updateUI(app: HTMLElement, force: boolean = false) {
     tbl = table
 }
 
+function getUsage() {
+    return `
+    This app keep sync with Excel and show the data in current(active) row so that you can see all columns without scrolling if there are too many columns.<br>
+    It assume there is a heading row in Excel and use the heading as the first column in the table. <br><p></p>
+    <b>Usage:</b> <br>
+    1. Click "Launch Excel to open file", Excel window will open. <br>
+    2. Then open your file in Excel. <br>
+    3. Locate to any cell, you will see full row data below. <br>
+    <br>
+    <b>Note:</b><br>
+    The window might be flashing on taskbar instead of showing up, just click on the flashing icon to bring it up. <br>
+    `.trim()
+}
+
 async function main() {
     const app = document.createElement('div');
     document.body.appendChild(app);
 
-    const usage = document.createElement('div');
-    usage.classList.add('alert', 'alert-info', 'alert-dismissible', 'fade', 'show')
-    usage.innerHTML = `
-        This app keep sync with Excel and show the data in current(active) row so that you can see all columns without scrolling if there are too many columns.<br>
-        It assume there is a heading row in Excel and use the heading as the first column in the table. <br>
-        <b>Usage:</b> Click "Launch Excel to open file", Excel window will open (window might be flashing on taskbar instead of showing up, just click on the flashing icon to bring it up). Then open your file. Locate to any cell, you will see full row data below. 
-        `.trim()
-    usage.style.marginTop = '10px'
+    const summary = document.createElement('div');
+    summary.classList.add('alert', 'alert-info')
+    summary.innerHTML = getUsage()
+    summary.style.marginTop = '10px'
+    summary.id = 'summary'
 
     const launch = document.createElement('button');
-    launch.classList.add('btn', 'btn-danger')
+    launch.classList.add('btn', 'btn-success')
     launch.style.marginRight = '10px'
     launch.textContent = 'Launch Excel to open file';
     launch.onclick = async () => {
@@ -114,6 +132,9 @@ async function main() {
         const styleText = document.getElementById('styleText')
         if (styleText) {
             styleText.style.display = styleText.style.display === 'none' ? 'block' : 'none'
+            if (styleText.style.display === 'block') {
+                styleText.focus()
+            }
         }
     }
 
@@ -124,44 +145,37 @@ async function main() {
     app.append(toggleHeading)
     toggleHeading.onclick = () => {
         showHeading = !showHeading
-        updateCss(showHeading ? '' : 'td:first-child {display: none}')
+        updateCss('showHeading', showHeading ? '' : 'td:first-child {display: none}')
     }
-
-    const toggleHelp = document.createElement('button')
-    toggleHelp.classList.add('btn', 'btn-info')
-    toggleHelp.textContent = 'Hide Usage';
-    app.append(toggleHelp)
-    toggleHelp.onclick = () => {
-        if (usage.style.display === 'none') {
-            usage.style.display = 'block'
-            toggleHelp.textContent = 'Hide Usage'
-        } else {
-            usage.style.display = 'none'
-            toggleHelp.textContent = 'Show Usage'
-        }
-    }
-
-    app.appendChild(usage)
 
     // create a multi-line text area for style
+    const defaultStyle = `
+    Customize css style by headings below
+    -------------------------------------
+
+    Title: color:blue;font-weight:bold;
+    Problem: color:darkred;
+    `.split('\n').map(s => s.trim()).slice(1).join('\n')
     const styleText = document.createElement('textarea')
     styleText.classList.add('form-control')
     styleText.id = 'styleText'
+    styleText.spellcheck = false
     styleText.style.width = '100%'
+    styleText.style.backgroundColor = 'lightyellow'
     styleText.style.height = '200px'
     styleText.style.display = 'none'
     styleText.style.marginTop = '10px'
     styleText.style.fontFamily = 'monospace'
-    styleText.value = localStorage.getItem('styleText') || ''
+    styleText.value = localStorage.getItem('styleText') || defaultStyle
     app.appendChild(styleText)
     styleText.onkeydown = () => {
         const v = styleText.value
-        updateStyle(app, v)
-        updateUI(app, true)
+        updateStyle(v)
         localStorage.setItem('styleText', v)
     }
-    updateStyle(app, styleText.value)
+    updateStyle(styleText.value)
 
+    app.appendChild(summary)
     // window.onbeforeunload = e => {
     //     e.preventDefault()
     //     closeBackend()

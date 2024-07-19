@@ -4,6 +4,9 @@ export const api = {
     },
     getActiveExcelRow: async function () {
         return await callAPI('getActiveExcelRow', arguments) as {
+            fileName: string,
+            sheetName: string,
+            row: string,
             headings: string[],
             data: string[]
         }

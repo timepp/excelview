@@ -5,8 +5,22 @@ import * as service from "./dwa/dwa_service.ts";
 
 async function main() {
     const args = parseArgs(Deno.args)
-    const apiPort = 22312
-    const backend = service.startDenoWebAppService('./frontend', apiPort, apiImpl.apiImpl);
+    let apiPort = 22312
+    // try different ports if the default one is already in use
+    let backend : Deno.HttpServer | null = null
+    for (let i = 0; i < 10; i++) {
+        try {
+            backend = service.startDenoWebAppService('./frontend', apiPort, apiImpl.apiImpl);
+            break
+        } catch (_e) {
+            apiPort++
+        }
+    }
+
+    if (!backend) {
+        console.error('could not start backend')
+        Deno.exit(1)
+    }
     
     let webPort = apiPort
     let frontend: vite.ViteDevServer | null = null
@@ -17,10 +31,14 @@ async function main() {
         frontend.listen(webPort)
     }
     
-    const browsers = args.browser? [args.browser] : 
-        ['C:\\Program Files (x86)\\Microsoft\\Edge\\Application\\msedge.exe',
+    const edge = [
+        'C:\\Program Files (x86)\\Microsoft\\Edge\\Application\\msedge.exe',
         'C:\\Program Files\\Microsoft\\Edge\\Application\\msedge.exe',
-        'C:\\Program Files\\Google\\Chrome\\Application\\chrome.exe',]
+    ]
+    const chrome = [
+        'C:\\Program Files\\Google\\Chrome\\Application\\chrome.exe',
+    ]
+    const browsers = args.browser === 'edge'? edge : args.browser === 'chrome'? chrome : args.browser? [args.browser] : [...edge, ...chrome]
     let cp: Deno.ChildProcess | null = null
     for (const browser of browsers) {
         console.log('trying to start browser:', browser)

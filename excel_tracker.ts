@@ -39,6 +39,10 @@ export async function stopTracker() {
     if (scriptProcess) {
         sendCommand('exit')
         await scriptProcess.status
+        // remove info file
+        try {
+            Deno.removeSync(infoFile)
+        } catch (_e) { /* ignore */ }
     }
 }
 
@@ -56,13 +60,15 @@ export async function getActiveExcelRow() {
     // read output from script
     try {
         const s = Deno.readTextFileSync(infoFile)
-        const [hs, vs] = s.split('_@@RS@@_')
+        const [fileName, sheetName, row, hs, vs] = s.split('_@@RS@@_')
         return {
+            fileName, sheetName, row,
             headings: hs.split('_@@HS@@_'),
             data: vs.split('_@@VS@@_')
         }
     } catch (_e) {
         return {
+            fileName: '', sheetName: '', row: '',
             headings: [],
             data: []
         }

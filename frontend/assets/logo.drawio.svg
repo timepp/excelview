@@ -1,0 +1,24 @@
+<svg host="65bd71144e" xmlns="http://www.w3.org/2000/svg" xmlns:xlink="http://www.w3.org/1999/xlink" version="1.1" width="190px" height="190px" viewBox="-0.5 -0.5 190 190" content="&lt;mxfile&gt;&lt;diagram id=&quot;ERdov3Qq4K1q9dswiqx9&quot; name=&quot;Page-1&quot;&gt;7VlNb6MwEP01XCMIJUmPS/p16EqrdqU9T2ECVo2NjFOS/vq1wQaS0F1oq0pJE0WK/Rjb+L0ZT2w7/jLb3ArI0588RupM3Xjj+FfOdOq5rqt+NLKtkWA6q4FEkNgYtcAjeUXb0qBrEmOxYyg5p5Lku2DEGcNI7mAgBC93zVac7o6aQ4IHwGME9BD9Q2KZ1ugicFv8DkmS2pE9O+EMrLEBihRiXnYg/9rxl4JzWZeyzRKpJs/yUre7eeNp82ICmRzSwK8bvABdm7mZ95JbO1n1irkuSnjSUJjKjKqqp4plSiQ+5hDp56XSWmGFBCGNZEovP1QiSCAMhWkUcUohL0jV21VlkRIa38OWr6Udx9ZUd4I/NyxXHa4IpUtOue6QcYaNlQWdqe+6C/dCGwu+ZjHGZuyiJBkFhveEoYWsAtoaRGRe3Z93zG8ORzwk2nD/gkLipgMZ4m+RZyjFVpmYpwvjAyYIPOsTZetSnrVJu+5kQTBunDRdt0qrghG7X/iLkcI/aI7ClAvyqvWkhrCu2m6HsTuEeA8KeRXuGpI8NyWKK2mKT1xKnpmKMNN1ex0mFjz/DSJBa9LjEjknTFYEBaH6KsqW7iRwAjWzpap7bV19tbmQS86UIylf1d0iFLLEQvZq7Q/W2oo7UNtg/nFpg+HSqjlJAvRBLZLAkiHhbZZUaMXo4X6cvlzRuKJVDKYkjpH1Un4xmPIOx7ORFJvOWj5G9wZUomAglburhac40K15z0FSzr65lJtd4k9I2flZ2beS3rFLuzin1q9MrbP5wNQ6+3hqvTzJqF0Mpvx/cfUPit8RpXu9fW6U2n9k31bLkbn1mKT1ztKOSq7HpO30nF2/dONqm3zFztUbcRx1RIHb+Oy32rt6I46YTlPM0929eqdwxlQttCiuX7Beb71P0vsU97TegJOojqqaLBIBvYcnpL94QSThivIrq08IlCQaiFBLoEXUliFEz0l1Yt85yl9Vn06nP0zbygP2LghmTu9lgOv6vrN31h9DkWKT642zZptEX1lNCC/mE6IcsZjgtsrKKIjiC4X2VcISZRs0/nLgGz03A2+6y6WJJZtw5z1HxUGP4O+4BVDV9mqp9oL2gs6//gs=&lt;/diagram&gt;&lt;/mxfile&gt;">
+    <defs/>
+    <g>
+        <path d="M 185 15 L 185 15 Q 185 5 175 5 L 15 5 Q 5 5 5 15 L 5 15" fill="none" stroke="#008040" stroke-width="10" stroke-miterlimit="10" pointer-events="all"/>
+        <path d="M 5 15 L 5 175 Q 5 185 15 185 L 175 185 Q 185 185 185 175 L 185 15" fill="none" stroke="#008040" stroke-width="10" stroke-miterlimit="10" pointer-events="none"/>
+        <path d="M 5 15 L 185 15" fill="none" stroke="#008040" stroke-width="10" stroke-miterlimit="10" pointer-events="none"/>
+        <path d="M 5 72 L 65 72 L 125 72 L 185 72" fill="none" stroke="#008040" stroke-width="10" stroke-miterlimit="10" pointer-events="none"/>
+        <path d="M 5 128 L 65 128 L 125 128 L 185 128" fill="none" stroke="#008040" stroke-width="10" stroke-miterlimit="10" pointer-events="none"/>
+        <path d="M 65 15 L 65 72 L 65 128 L 65 185" fill="none" stroke="#008040" stroke-width="10" stroke-miterlimit="10" pointer-events="none"/>
+        <path d="M 125 15 L 125 72 L 125 128 L 125 185" fill="none" stroke="#008040" stroke-width="10" stroke-miterlimit="10" pointer-events="none"/>
+        <path d="M 5 15 M 65 15 M 65 72 M 5 72" fill="none" stroke="rgb(0, 0, 0)" stroke-linecap="square" stroke-miterlimit="10" pointer-events="none"/>
+        <path d="M 65 15 M 125 15 M 125 72 M 65 72" fill="none" stroke="rgb(0, 0, 0)" stroke-linecap="square" stroke-miterlimit="10" pointer-events="none"/>
+        <path d="M 125 15 M 185 15 M 185 72 M 125 72" fill="none" stroke="rgb(0, 0, 0)" stroke-linecap="square" stroke-miterlimit="10" pointer-events="none"/>
+        <path d="M 5 72 M 65 72 M 65 128 M 5 128" fill="none" stroke="rgb(0, 0, 0)" stroke-linecap="square" stroke-miterlimit="10" pointer-events="none"/>
+        <path d="M 65 72 M 125 72 M 125 128 M 65 128" fill="none" stroke="rgb(0, 0, 0)" stroke-linecap="square" stroke-miterlimit="10" pointer-events="none"/>
+        <path d="M 125 72 M 185 72 M 185 128 M 125 128" fill="none" stroke="rgb(0, 0, 0)" stroke-linecap="square" stroke-miterlimit="10" pointer-events="none"/>
+        <path d="M 5 128 M 65 128 M 65 185 M 5 185" fill="none" stroke="rgb(0, 0, 0)" stroke-linecap="square" stroke-miterlimit="10" pointer-events="none"/>
+        <path d="M 65 128 M 125 128 M 125 185 M 65 185" fill="none" stroke="rgb(0, 0, 0)" stroke-linecap="square" stroke-miterlimit="10" pointer-events="none"/>
+        <path d="M 125 128 M 185 128 M 185 185 M 125 185" fill="none" stroke="rgb(0, 0, 0)" stroke-linecap="square" stroke-miterlimit="10" pointer-events="none"/>
+        <path d="M 20 95.01 C 38.52 69.67 66.01 55.01 95 55.01 C 123.99 55.01 151.48 69.67 170 95.01 C 151.48 120.35 123.99 135.01 95 135.01 C 66.01 135.01 38.52 120.35 20 95.01 Z" fill="rgb(255, 255, 255)" stroke="#000033" stroke-width="6" stroke-miterlimit="10" pointer-events="none"/>
+        <ellipse cx="95" cy="95.01" rx="27" ry="30.683997443000216" fill="rgb(255, 255, 255)" stroke="#000033" stroke-width="6" pointer-events="none"/>
+        <ellipse cx="95" cy="95.01" rx="18" ry="20.455998295333476" fill="rgb(255, 255, 255)" stroke="#000033" stroke-width="6" pointer-events="none"/>
+    </g>
+</svg>

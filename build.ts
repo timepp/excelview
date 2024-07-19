@@ -9,7 +9,7 @@ await vite.build()
 const staticAssets = {
     '/index.html': './frontend/dist/index.html',
     '/assets/index.js': './frontend/dist/assets/index.js',
-    '/assets/logo.jpg': './frontend/dist/assets/logo.jpg',
+    '/assets/logo.drawio.svg': './frontend/dist/assets/logo.drawio.svg',
     'excel.js': './excel.js'
 }
 
