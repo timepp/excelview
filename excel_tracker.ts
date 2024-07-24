@@ -5,10 +5,10 @@
 //   - Need to create child process, make it a little bit complex
 
 import staticAssets from './static_assets.json' with { type: "json" }
+import {debug} from './debug.ts'
 
-let scriptProcess: Deno.ChildProcess
+let scriptProcess: Deno.ChildProcess | null = null
 
-const infoFile = Deno.env.get('TEMP') + '\\excel_info.txt'
 function launchScript() {
     // check if excel.js is present
     let scriptFile = `./excel.js`
@@ -20,29 +20,69 @@ function launchScript() {
         Deno.writeTextFileSync(scriptFile, content)
     }
     const cmd = new Deno.Command('cscript.exe', {
-        args: ['//nologo', scriptFile, infoFile],
-        stdin: 'piped'
+        args: ['//nologo', scriptFile],
+        stdin: 'piped',
+        stdout: 'piped'
     })
     const p = cmd.spawn()
     return p
 }
 
+// charcode,charcode,...,charcode -> string
+function decodeStr(s: string) {
+    if (!s) return ''
+    if (s.startsWith('CCE:')) {
+        return String.fromCharCode(...s.slice(4).split(',').map(c => parseInt(c)))
+    } else {
+        return s
+    }
+}
+
+let signal = new Promise<void>((r) => r())
+
 async function sendCommand(cmd: string) {
     if (scriptProcess) {
-        const writer = scriptProcess.stdin.getWriter()
-        await writer.write(new TextEncoder().encode(cmd + '\n'))
-        await writer.releaseLock()
+        let mySignal = signal
+        while (true) {
+            await signal
+            if (mySignal !== signal) {
+                mySignal = signal
+            } else {
+                break
+            }
+        }
+        
+        let res: () => void
+        signal = new Promise<void>((resolver) => res = resolver)
+        let textValue = ''
+        try {
+            if (debug) console.log('ET: sendCommand:', cmd)
+            const writer = scriptProcess.stdin.getWriter()
+            await writer.write(new TextEncoder().encode(cmd + '\n'))
+            writer.releaseLock()
+            const reader = scriptProcess.stdout.getReader()
+            if (debug) console.log('ET: read response')
+            const { value, done } = await reader.read()
+            reader.releaseLock()
+            textValue = new TextDecoder().decode(value)
+            if (debug) console.log(`ET: response: [${JSON.stringify(textValue)}]`)
+        } catch (e) {
+            console.error('ET: sendCommand error:', cmd, e)
+        }
+        // resolve the signal to unblock the next command
+        res!()
+        return decodeStr(textValue.trim())
     }
+    return ''
 }
 
 export async function stopTracker() {
     if (scriptProcess) {
+        console.log('stopping script process...')
         sendCommand('exit')
         await scriptProcess.status
-        // remove info file
-        try {
-            Deno.removeSync(infoFile)
-        } catch (_e) { /* ignore */ }
+        console.log('script process stopped')
+        scriptProcess = null
     }
 }
 
@@ -52,25 +92,69 @@ export async function startNewTracker() {
 }
 
 export async function getActiveExcelRow() {
-    if (scriptProcess) {
-        await sendCommand('get active row')
-    }
-    // wait the file to be created
-    await new Promise(resolve => setTimeout(resolve, 500))
-    // read output from script
-    try {
-        const s = Deno.readTextFileSync(infoFile)
-        const [fileName, sheetName, row, hs, vs] = s.split('_@@RS@@_')
+    if (!scriptProcess) {
         return {
-            fileName, sheetName, row,
-            headings: hs.split('_@@HS@@_'),
-            data: vs.split('_@@VS@@_')
-        }
-    } catch (_e) {
-        return {
-            fileName: '', sheetName: '', row: '',
+            result: 'ExcelNotRunning' as const,
+            fileName: '', sheetName: '', row: 0,
             headings: [],
             data: []
         }
     }
+
+    const s = await sendCommand('getActiveRow')
+    if (debug) console.log('ET: getActiveExcelRow:', JSON.stringify(s))
+    if (s.startsWith('Error:')) {
+        return {
+            result: 'ExcelTempError' as const,
+            fileName: '', sheetName: '', row: 0,
+            headings: [],
+            data: []
+        }
+    }
+    
+    if (s) {
+        const [fileName, sheetName, r, hs, vs] = s.split('_@@RS@@_')
+        const row = parseInt(r)
+        return {
+            result: 'Success' as const,
+            fileName, sheetName, row,
+            headings: hs?.split('_@@HS@@_'),
+            data: vs?.split('_@@VS@@_')
+        }
+    }
+
+    return {
+        result: 'SheetNotReady' as const,
+        fileName: '', sheetName: '', row: 0,
+        headings: [],
+        data: []
+    }
 }
+
+export async function setActiveExcelRowValue(col: number, value: string) {
+    if (scriptProcess) {
+        console.log('ET: setActiveExcelRowValue:', col, value)
+        await sendCommand(`updateActiveRow ${col} ${value}`)
+        return true
+    }
+    return false
+}
+
+export async function gotoRow(row: number) {
+    if (scriptProcess) {
+        console.log('ET: gotoRow:', row)
+        await sendCommand(`gotoRow ${row}`)
+        return true
+    }
+    return false
+}
+
+export async function navigateRow(offset: number) {
+    if (scriptProcess) {
+        console.log('ET: navigateRow:', offset)
+        await sendCommand(`navigateRow ${offset}`)
+        return true
+    }
+    return false
+}
+

@@ -8,6 +8,15 @@ export const apiImpl: BackendAPI = {
     },
     getActiveExcelRow: async () => {
         return await et.getActiveExcelRow()
+    },
+    reviewActiveExcelRow: async (col: number, value: string) => {
+        return await et.setActiveExcelRowValue(col, value)
+    },
+    gotoRow: async (row: number) => {
+        return await et.gotoRow(row)
+    },
+    navigateRow: async (offset: number) => {
+        return await et.navigateRow(offset)
     }
 }
 

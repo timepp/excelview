@@ -2,9 +2,13 @@ import * as vite from 'npm:vite@5.3.3'
 import { parseArgs } from "jsr:@std/cli@0.224.7/parse-args";
 import * as apiImpl from "./backend/api_impl.ts";
 import * as service from "./dwa/dwa_service.ts";
+import { debug } from './debug.ts'
+import { setDebug } from './debug.ts';
 
 async function main() {
     const args = parseArgs(Deno.args)
+    if (args.debug) setDebug(true)
+
     let apiPort = 22312
     // try different ports if the default one is already in use
     let backend : Deno.HttpServer | null = null
@@ -60,28 +64,11 @@ async function main() {
 
     console.log('browser started, pid:', cp.pid)
 
-    const cleanUp = async () => {
-        console.log('cleaning up...')
-        if (frontend) {
-            await frontend.close()
-        }
-        await apiImpl.cleanUp()
-    }
-
-    let sigIntCount = 0
-    Deno.addSignalListener('SIGINT', () => {
-        sigIntCount++
-        if (sigIntCount > 1) {
-            console.log('SIGINT received again, force exit')
-            Deno.exit(1)
-        } else {
-            console.log('SIGINT received, shutting down backend')
-            service.stopDenoWebAppService()
-        }
-    })
-
     await backend.finished
-    await cleanUp()
+    if (frontend) {
+        await frontend.close()
+    }
+    await apiImpl.cleanUp()
     console.log('App Exit')
 }
 

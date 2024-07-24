@@ -2,6 +2,7 @@ import {typeByExtension} from 'jsr:@std/media-types@1.0.1'
 import { extname } from 'jsr:@std/path@1.0.0'
 import staticAssets from '../static_assets.json' with { type: "json" }
 import * as enc from 'jsr:@std/encoding@1.0.1'
+import {debug} from '../debug.ts'
 
 const clients: WebSocket[] = []
 let server: Deno.HttpServer | null = null
@@ -11,22 +12,26 @@ export function startDenoWebAppService(root: string, port: number, apiImpl: {[ke
         // handle websocket connection
         if (req.headers.get("upgrade") === "websocket") {
             const { socket, response } = Deno.upgradeWebSocket(req);
+            let closeTimer = 0
             socket.onopen = () => {
                 console.log("socket opened");
+                clearTimeout(closeTimer)
                 clients.push(socket)
             }
             socket.onmessage = async (e) => {
-                const {cmd, args} = JSON.parse(e.data)
+                if (debug) console.log("socket message", e.data);
+                const {id, cmd, args} = JSON.parse(e.data)
                 try {
+                    let result = `unknown command: ${cmd}`
                     if (cmd in apiImpl) {
                         const func = apiImpl[cmd as keyof typeof apiImpl]
-                        const result = await func.apply(apiImpl, args)
-                        socket.send(JSON.stringify(result))
-                    } else {
-                        socket.send(`'invalid command ${cmd}'`)
+                        result = await func.apply(apiImpl, args)
                     }
+                    // console.log('sending response:', result)
+                    socket.send(JSON.stringify({id, result}))
                 } catch (_e) {
-                    // ignore
+                    console.error(_e)
+                    socket.send(JSON.stringify({id, result:`error: ${_e}`}))
                 }
             }
             socket.onclose = () => {
@@ -35,7 +40,7 @@ export function startDenoWebAppService(root: string, port: number, apiImpl: {[ke
                 if (i >= 0) {
                     clients.splice(i, 1)
                 }
-                setTimeout(() => {
+                closeTimer = setTimeout(() => {
                     if (clients.length === 0) {
                         console.log('no more clients, shutting down server')
                         ac.abort()
@@ -89,5 +94,5 @@ export function startDenoWebAppService(root: string, port: number, apiImpl: {[ke
 }
 
 export function stopDenoWebAppService() {
-    ac.abort()
+    clients.forEach(c => c.close())
 }

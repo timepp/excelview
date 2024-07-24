@@ -35,11 +35,134 @@ async function getActiveExcelRow() {
     }
 }
 
+function createReviewPane() {
+    const defaultSettings = {
+        reviewColumnName: '',
+        predefinedValues: [] as string[],
+    }
+    const sstr = localStorage.getItem('reviewSettings')
+    const settings = sstr ? JSON.parse(sstr) as typeof defaultSettings : defaultSettings
+
+    const rp = document.createElement('div')
+    rp.id = 'reviewPane'
+    rp.style.display = 'none'
+    rp.style.marginTop = '10px'
+
+    // create a input group for review
+    // which contains a text addon("select field") and a selector
+    const inputGroup = document.createElement('div')
+    inputGroup.classList.add('input-group')
+    rp.appendChild(inputGroup)
+
+    // create "prev" and "next" navigation buttons
+    const prev = document.createElement('button')
+    prev.classList.add('btn', 'btn-primary')
+    prev.textContent = 'Prev'
+    prev.onclick = async () => {
+        await api.navigateRow(-1)
+    }
+    inputGroup.appendChild(prev)
+    const next = document.createElement('button')
+    next.classList.add('btn', 'btn-primary')
+    next.textContent = 'Next'
+    next.onclick = async () => {
+        await api.navigateRow(1)
+    }
+    inputGroup.appendChild(next)
+
+    const inputGroupText = document.createElement('span')
+    inputGroupText.classList.add('input-group-text')
+    inputGroupText.textContent = 'Select Field'
+    inputGroup.appendChild(inputGroupText)
+
+    // create a column selector
+    const columnSelector = document.createElement('input')
+    columnSelector.classList.add('form-control')
+    columnSelector.id = 'columnSelector'
+    columnSelector.value = settings.reviewColumnName
+    inputGroup.appendChild(columnSelector)
+
+    const predefinedValuePrompt = document.createElement('span')
+    predefinedValuePrompt.textContent = 'Predefined Value:'
+    predefinedValuePrompt.classList.add('input-group-text')
+    inputGroup.appendChild(predefinedValuePrompt)
+    
+    // create a input for predefined value, and 
+    const predefinedValue = document.createElement('input')
+    predefinedValue.classList.add('form-control')
+    predefinedValue.id = 'predefinedValue'
+    predefinedValue.placeholder = 'Enter predefined value'
+    predefinedValue.value = settings.predefinedValues.join(',')
+    inputGroup.appendChild(predefinedValue)
+
+    const valuePrompt = document.createElement('span')
+    valuePrompt.textContent = 'Review Value:'
+    valuePrompt.classList.add('input-group-text')
+    inputGroup.appendChild(valuePrompt)
+
+    // create a select to choose predefined value
+    const valueSelector = document.createElement('select')
+    valueSelector.classList.add('form-control')
+    valueSelector.id = 'valueSelector'
+    inputGroup.appendChild(valueSelector)
+
+    columnSelector.onchange = () => {
+        settings.reviewColumnName = columnSelector.value
+        localStorage.setItem('reviewSettings', JSON.stringify(settings))
+    }
+
+    predefinedValue.onchange = () => {
+        const arr = predefinedValue.value.split(',').map(s => s.trim()).filter(s => s !== '')
+        updateSelectorCandidates(valueSelector, arr)
+        settings.predefinedValues = arr
+        localStorage.setItem('reviewSettings', JSON.stringify(settings))
+    }
+    updateSelectorCandidates(valueSelector, settings.predefinedValues)
+
+    valueSelector.onchange = async () => {
+        const value = valueSelector.options[valueSelector.selectedIndex].text
+        const col = currentRowData!.headings.indexOf(columnSelector.value)
+        if (col >= 0) {
+            await api.reviewActiveExcelRow(col + 1, value)
+        } else {
+            console.error('column not found:', columnSelector.value)
+            alert(`Error: Column ${columnSelector.value} not found`)
+        }
+    }
+
+    return rp
+}
+
+function updateSelectorCandidates(selector: HTMLSelectElement, arr: string[]) {
+    const currentValue = selector.value
+    selector.innerHTML = ''
+    arr.forEach((v, i) => {
+        const opt = document.createElement('option')
+        opt.value = i.toString()
+        opt.textContent = v
+        selector.appendChild(opt)
+    })
+    selector.value = currentValue
+}
+
 async function updateUI(app: HTMLElement, force: boolean = false) {
     const activeRow = await getActiveExcelRow()
+    // schedule next update
+
     if (!force && currentRowData && JSON.stringify(currentRowData) === JSON.stringify(activeRow)) {
         return
     }
+
+    if (activeRow.result === 'ExcelTempError') {
+        console.log('temp error, wait for next update')
+        return
+    }
+
+    if (activeRow.result === 'ExcelNotRunning' || activeRow.result === 'SheetNotReady') {
+        // excel not ready, wait
+        return
+    }
+
     currentRowData = activeRow
 
     const summary = document.getElementById('summary')!
@@ -148,6 +271,20 @@ async function main() {
         updateCss('showHeading', showHeading ? '' : 'td:first-child {display: none}')
     }
 
+    const toggleReview = document.createElement('button')
+    toggleReview.classList.add('btn', 'btn-danger')
+    toggleReview.style.marginRight = '10px'
+    toggleReview.textContent = 'Toggle Review';
+    app.append(toggleReview)
+    toggleReview.onclick = () => {
+        const rp = document.getElementById('reviewPane')
+        if (rp) {
+            rp.style.display = rp.style.display === 'none' ? 'block' : 'none'
+        }
+    }
+
+    app.append(createReviewPane())
+
     // create a multi-line text area for style
     const defaultStyle = `
     Customize css style by headings below
@@ -184,7 +321,9 @@ async function main() {
     app.appendChild(document.createElement('p'))
 
     updateUI(app)
-    setInterval(updateUI, 1000, app)
+    setInterval(() => {
+        updateUI(app)
+    }, 1000)
 }
 
 document.addEventListener('DOMContentLoaded', function() {
