@@ -221,6 +221,7 @@ function getUsage() {
     1. Click "Launch Excel to open file", Excel window will open. <br>
     2. Then open your file in Excel. <br>
     3. Locate to any cell, you will see full row data below. <br>
+    4. In the review pane, you can navigate to previous/next row, pick a "review column" and change the value with predefined value. <br>
     <br>
     <b>Note:</b><br>
     The window might be flashing on taskbar instead of showing up, just click on the flashing icon to bring it up. <br>

@@ -5,6 +5,7 @@
 //   - Need to create child process, make it a little bit complex
 
 import staticAssets from './static_assets.json' with { type: "json" }
+import * as enc from 'jsr:@std/encoding@1.0.1'
 import {debug} from './debug.ts'
 
 let scriptProcess: Deno.ChildProcess | null = null
@@ -16,8 +17,8 @@ function launchScript() {
         Deno.statSync(scriptFile)
     } catch (_e) {
         scriptFile = Deno.env.get('TEMP') + '\\excel.js'
-        const content = staticAssets['excel.js']
-        Deno.writeTextFileSync(scriptFile, content)
+        const content = enc.decodeBase64(staticAssets['excel.js'])
+        Deno.writeTextFileSync(scriptFile, new TextDecoder().decode(content))
     }
     const cmd = new Deno.Command('cscript.exe', {
         args: ['//nologo', scriptFile],
