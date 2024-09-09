@@ -1,5 +1,6 @@
 {
     "name": "@timepp/ev",
     "version": "0.1.14",
-    "exports": "./launch.ts"
+    "exports": "./launch.ts",
+    "license": "MIT"
 }
