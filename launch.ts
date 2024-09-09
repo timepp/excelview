@@ -28,7 +28,7 @@ async function main() {
     
     let webPort = apiPort
     let frontend: vite.ViteDevServer | null = null
-    // Use Vite for local development
+    // If it's local development, use vite to serve the frontend so that we can use hot reload
     if (!args.release && import.meta.url.startsWith('file://')) {
         frontend = await vite.createServer()
         webPort = 5173

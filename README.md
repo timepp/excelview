@@ -1,5 +1,7 @@
 # Excel View - helper UI for navigating long lines in Excel
 
+> This app is powered by `timepp/dui`. Refer to https://jsr.io/@timepp/dui for how to develop a similar app.
+
 This is a tool to help you navigate long lines in Excel. It keeps track the active cell and automatically get the entire row data and display it in a separate window. With this you can easily see all columns in a row without scrolling left and right.
 
 Prerequisite:
@@ -31,8 +33,3 @@ Below is the screenshot with fake data:
 ![alt text](screenshot.png)
 
 ## Development
-
-### TODO
-
-- favicon
-- use websocket to communicate between frontend/backend, so that we can get rid of the polling and have better detection on UI exits
